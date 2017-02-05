@@ -4,7 +4,8 @@
   "description": "minimal buildbot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test",
+    "start": "node run.js"
   },
   "author": {
     "name": "Richard Hu",
@@ -13,13 +14,13 @@
   "engines": {
     "node": ">= 0.10.0"
   },
-  "scripts": {
-    "test": "grunt test",
-    "start": "node run.js"
-  },
   "license": "ISC",
   "dependencies": {
     "hapi": "^16.1.0",
-    "inert": "^4.1.0"
+    "inert": "^4.1.0",
+    "nodeunit": "^0.10.2",
+  },
+  "devDependencies": {
+    "nodeunit-httpclient": "^0.2.1"
   }
 }
