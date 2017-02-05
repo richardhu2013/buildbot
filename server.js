@@ -118,7 +118,7 @@ module.exports = () => {
 
       if (task === undefined) {
         return reply({
-          err: 'Task id ' + inJob.taskid + 'does not exist'
+          err: 'Invalid taskid'
         }).code(404);
       }
       currentJobId++;
@@ -127,7 +127,7 @@ module.exports = () => {
         taskid: task.taskid,
         script: task.script,
         jobid: currentJobId,
-        envars: inJob.envars || {}
+        envvars: inJob.envvars || {}
       };
       jobs.push(job);
       var script = require('./script.js')();
@@ -149,7 +149,6 @@ module.exports = () => {
           err: 'Invalid jobid'
         }).code(400);
       } else {
-        console.log(jobs);
         var foundJob = _.find(jobs, (job) => {
           return (job.jobid === parseInt(request.params.jobid));
         });

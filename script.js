@@ -35,7 +35,7 @@ module.exports = () => {
       cp.exec(
         command, {
           cwd: dir,
-          env: job.envars
+          env: job.envvars
         },
         (err, stdout, stderr) => {
           if (err) {
