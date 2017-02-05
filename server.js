@@ -39,12 +39,14 @@ module.exports = () => {
     path: '/tasks/{taskid}',
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.taskid)) {
-        reply('Invalid task id').code(400);
+        return reply({
+          err: 'Invalid taskid'
+        }).code(400);
       } else {
         var task = _.find(tasks, (task) => {
           return (task.taskid === parseInt(request.params.taskid));
         });
-        console.log(task);
+
         if (task !== undefined) {
           reply({
             script: task.script
@@ -62,12 +64,11 @@ module.exports = () => {
     handler: (request, reply) => {
       // create a new task id
       currentTaskId++;
-      console.log(request.payload);
       var task = {
         taskid: currentTaskId,
         script: request.payload.script
       };
-      console.log(task);
+
       tasks.push(task);
       reply({
         taskid: currentTaskId
@@ -80,13 +81,19 @@ module.exports = () => {
     path: '/tasks/{taskid}',
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.taskid)) {
-        reply('Invalid task id').code(400);
+        return reply({
+          err: 'Invalid taskid'
+        }).code(400);
       } else {
         var task = _.find(tasks, (task) => {
           return (task.taskid === parseInt(request.params.taskid));
         });
+        console.log(task);
         if (task !== undefined) {
           task.script = request.payload.script;
+          reply({
+            result: 'ok'
+          });
         } else {
           reply('Task id=' + request.params.taskid + ' does not exist').code(404);
         }
@@ -101,14 +108,18 @@ module.exports = () => {
       // create a new task id
       var inJob = request.payload;
       if (!inJob.hasOwnProperty('taskid')) {
-        return reply('Missing taskid').code(400);
+        return reply({
+          err: 'Missing taskid'
+        }).code(400);
       }
       var task = _.find(tasks, (task) => {
         return (task.taskid === parseInt(inJob.taskid));
       });
 
       if (task === undefined) {
-        return reply('Task id ' + inJob.taskid + 'does not exist').code(404);
+        return reply({
+          err: 'Task id ' + inJob.taskid + 'does not exist'
+        }).code(404);
       }
       currentJobId++;
       var job = {
@@ -134,7 +145,9 @@ module.exports = () => {
     path: '/jobs/{jobid}/status',
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.jobid)) {
-        reply('Invalid job id').code(400);
+        return reply({
+          err: 'Invalid jobid'
+        }).code(400);
       } else {
         console.log(jobs);
         var foundJob = _.find(jobs, (job) => {
@@ -156,7 +169,9 @@ module.exports = () => {
     path: '/jobs/{jobid}/output/{path}',
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.jobid)) {
-        reply('Invalid job id').code(400);
+        return reply({
+          err: 'Invalid jobid'
+        }).code(400);
       } else {
         var logPath = __dirname + '/' + request.params.jobid + '/' + request.params.path;
         fs.readFile(logPath, (err, data) => {
