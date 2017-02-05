@@ -52,7 +52,9 @@ module.exports = () => {
             script: task.script
           });
         } else {
-          reply('Task id=' + request.params.taskid + ' does not exist').code(404);
+          return reply({
+            err: 'Invalid taskid'
+          }).code(404);
         }
       }
     }
@@ -88,7 +90,7 @@ module.exports = () => {
         var task = _.find(tasks, (task) => {
           return (task.taskid === parseInt(request.params.taskid));
         });
-        console.log(task);
+
         if (task !== undefined) {
           task.script = request.payload.script;
           reply({
@@ -157,7 +159,9 @@ module.exports = () => {
             status: foundJob.status
           });
         } else {
-          return reply('Job id ' + request.params.jobid + ' does not exist').code(404);
+          return reply({
+            err: 'Invalid jobid'
+          }).code(404);
         }
       }
     }
@@ -185,6 +189,7 @@ module.exports = () => {
       }
     }
   });
+
   var start = (done) => {
     server.start(done);
   };
