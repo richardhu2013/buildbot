@@ -1,0 +1,25 @@
+{
+  "name": "buildbot",
+  "version": "1.0.0",
+  "description": "minimal buildbot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Richard Hu",
+    "email": "richardhu2011@gmail.com"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "scripts": {
+    "test": "grunt test",
+    "start": "node run.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^16.1.0",
+    "inert": "^4.1.0"
+  }
+}
