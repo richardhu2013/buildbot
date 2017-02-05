@@ -10,14 +10,14 @@ var buildbotClient = require('nodeunit-httpclient').create({
   status: 200
 });
 
-exports.rest_devices = {
+exports.rest_buildbot = {
 
   'buildbot server': (test) => {
     buildbotServer = require('./server.js')();
     buildbotServer.start(test.done);
   },
 
-  'create a new task script will run more than 4 seconds': (test) => {
+  'create a new task that will run more than 4 seconds': (test) => {
     buildbotClient.post(
       test,
       'tasks', {
@@ -31,7 +31,33 @@ exports.rest_devices = {
       });
   },
 
-  'check new task script': (test) => {
+  'check task id is validated when accessing task': (test) => {
+    buildbotClient.get(
+      test,
+      'tasks/notANumber', {
+
+      }, {
+        status: 400
+      }, (res) => {
+        var reply = JSON.parse(res.body);
+        test.equal(reply.err, 'Invalid taskid');
+        test.done();
+      });
+  },
+
+  'check task id exists or not when accessing task': (test) => {
+    buildbotClient.get(
+      test,
+      'tasks/3', {}, {
+        status: 404
+      }, (res) => {
+        var reply = JSON.parse(res.body);
+        test.equal(reply.err, 'Invalid taskid');
+        test.done();
+      });
+  },
+
+  'check task script is correct': (test) => {
     buildbotClient.get(
       test,
       'tasks/1', {
@@ -67,7 +93,33 @@ exports.rest_devices = {
       });
   },
 
-  'create task2 in which script will failed immedately': (test) => {
+  'check jobid is validated when accessing job status': (test) => {
+    buildbotClient.get(
+      test,
+      'jobs/notANumber/status', {
+
+      }, {
+        status: 400
+      }, (res) => {
+        var reply = JSON.parse(res.body);
+        test.equal(reply.err, 'Invalid jobid');
+        test.done();
+      });
+  },
+
+  'check jobid exists or not when accessing job status': (test) => {
+    buildbotClient.get(
+      test,
+      'jobs/6/status', {}, {
+        status: 404
+      }, (res) => {
+        var reply = JSON.parse(res.body);
+        test.equal(reply.err, 'Invalid jobid');
+        test.done();
+      });
+  },
+
+  'create task2 in which script will fail immedately': (test) => {
     buildbotClient.post(
       test,
       'tasks', {
@@ -99,7 +151,7 @@ exports.rest_devices = {
     setTimeout(test.done, 2000);
   },
 
-  'check job 2 status is failed': (test) => {
+  'check job2 status is failed': (test) => {
     buildbotClient.get(
       test,
       'jobs/2/status', {}, (res) => {
@@ -109,7 +161,7 @@ exports.rest_devices = {
       });
   },
 
-  'change task2 to use new shell script': (test) => {
+  'change task2 to use new script': (test) => {
     buildbotClient.put(
       test,
       'tasks/2', {
@@ -145,7 +197,7 @@ exports.rest_devices = {
     setTimeout(test.done, 2000);
   },
 
-  'get job3 output log and check envs are set': (test) => {
+  'get job3 output log and check envvars are set': (test) => {
     buildbotClient.get(
       test,
       'jobs/3/output/run.log', {}, (res) => {
