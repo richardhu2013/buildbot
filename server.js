@@ -30,19 +30,7 @@ module.exports = () => {
     method: 'GET',
     path: '/',
     handler: {
-      file: Path.join(__dirname, 'public/index.html')
-    }
-  });
-
-  server.route({
-    method: 'GET',
-    path: '/{path*}',
-    handler: {
-      directory: {
-        path: Path.join(__dirname, 'public'),
-        listing: false,
-        index: false
-      }
+      file: Path.join(__dirname, './public/index.html')
     }
   });
 
@@ -51,18 +39,19 @@ module.exports = () => {
     path: '/tasks/{taskid}',
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.taskid)) {
-        reply('Invalid task id');
-      } else if (_.find(tasks, (task) => {
-          return (task.taskid === parseInt(request.params.taskid));
-        })) {
-        reply({
-          result: 'ok',
-          data: ''
-        });
+        reply('Invalid task id').code(400);
       } else {
-        reply({
-          result: 'task not exist'
+        var task = _.find(tasks, (task) => {
+          return (task.taskid === parseInt(request.params.taskid));
         });
+        console.log(task);
+        if (task !== undefined) {
+          reply({
+            script: task.script
+          });
+        } else {
+          reply('Task id=' + request.params.taskid + ' does not exist').code(404);
+        }
       }
     }
   });
@@ -76,7 +65,7 @@ module.exports = () => {
       console.log(request.payload);
       var task = {
         taskid: currentTaskId,
-        body: request.payload.script
+        script: request.payload.script
       };
       console.log(task);
       tasks.push(task);
@@ -92,14 +81,15 @@ module.exports = () => {
     handler: (request, reply) => {
       if (!validate.isNumeric(request.params.taskid)) {
         reply('Invalid task id').code(400);
-      } else if (_.find(tasks, (task) => {
-          return (task.taskid === parseInt(request.params.taskid));
-        })) {
-        reply({
-          result: 'ok'
-        });
       } else {
-        reply('task id=' + request.params.taskid + ' does not exist').code(400);
+        var task = _.find(tasks, (task) => {
+          return (task.taskid === parseInt(request.params.taskid));
+        });
+        if (task !== undefined) {
+          task.script = request.payload.script;
+        } else {
+          reply('Task id=' + request.params.taskid + ' does not exist').code(404);
+        }
       }
     }
   });
@@ -116,21 +106,22 @@ module.exports = () => {
       var task = _.find(tasks, (task) => {
         return (task.taskid === parseInt(inJob.taskid));
       });
-      console.log('>>>>task:', task);
+
       if (task === undefined) {
-        return reply('Task id ' + inJob.taskid + 'does not exist').code(400);
+        return reply('Task id ' + inJob.taskid + 'does not exist').code(404);
       }
       currentJobId++;
       var job = {
         status: 'running',
         taskid: task.taskid,
+        script: task.script,
         jobid: currentJobId,
         envars: inJob.envars || {}
       };
       jobs.push(job);
       var script = require('./script.js')();
       script.run(job, () => {
-        console.log('script is finished');
+        console.log('job ' + job.jobid + ' finished');
       });
       return reply({
         jobid: currentJobId
@@ -154,12 +145,32 @@ module.exports = () => {
             status: foundJob.status
           });
         } else {
-          return reply('Job id ' + request.params.jobid + ' does not exist').code(400);
+          return reply('Job id ' + request.params.jobid + ' does not exist').code(404);
         }
       }
     }
   });
 
+  server.route({
+    method: 'GET',
+    path: '/jobs/{jobid}/output/{path}',
+    handler: (request, reply) => {
+      if (!validate.isNumeric(request.params.jobid)) {
+        reply('Invalid job id').code(400);
+      } else {
+        var logPath = __dirname + '/' + request.params.jobid + '/' + request.params.path;
+        fs.readFile(logPath, (err, data) => {
+          if (err) {
+            reply({
+              err: 'not found'
+            }).code(404);
+          } else {
+            reply(data);
+          }
+        });
+      }
+    }
+  });
   var start = (done) => {
     server.start(done);
   };
